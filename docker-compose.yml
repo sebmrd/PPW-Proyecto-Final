@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  postgres-dev:
+    image: postgres:15
+    container_name: postgres-dev
+    environment:
+      POSTGRES_USER: ups
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+      POSTGRES_DB: postgres 
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Aquí puedes montar los scripts para ejecutarlos como dice la guía
+
+  redis-dev:
+    image: redis:7
+    container_name: redis-dev
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata:
