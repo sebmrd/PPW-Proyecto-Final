@@ -1,0 +1,49 @@
+services:
+  # 1. Base de datos PostgreSQL
+  - type: psql
+    name: postgres-academic-db
+    plan: free
+    postgresMajorVersion: 15
+
+  # 2. Caché Redis
+  - type: redis
+    name: redis-academic-cache
+    plan: free
+
+  # 3. Backend Spring Boot
+  - type: web
+    name: backend-academic-events
+    env: docker
+    plan: free
+    autoDeploy: false
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: DB_URL
+        fromDatabase:
+          name: postgres-academic-db
+          property: connectionString
+      - key: DB_USERNAME
+        value: ups
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: postgres-academic-db
+          property: password
+      - key: REDIS_HOST
+        fromService:
+          type: redis
+          name: redis-academic-cache
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: redis
+          name: redis-academic-cache
+          property: port
+      - key: JWT_SECRET
+        value: "ReemplazaEstoPorTuClaveSecretaLargaEnElDashboardDeRender"
+      - key: JWT_ACCESS_EXPIRATION
+        value: 900000
+      - key: JWT_REFRESH_EXPIRATION
+        value: 86400000
+      - key: ALLOWED_ORIGINS
+        value: "*"

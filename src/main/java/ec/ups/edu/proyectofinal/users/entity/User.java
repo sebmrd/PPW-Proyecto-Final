@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,14 +22,26 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "first_name", nullable = false, length = 80)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false, length = 80)
+    private String lastName;
+
+    @Column(nullable = false, unique = true, length = 160)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "password_hash", nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private Boolean status = true; // Estado activo por defecto
+    @Column(nullable = false, length = 20)
+    private String status = "ACTIVE"; 
+
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt = Instant.now();
+
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt = Instant.now();
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -38,8 +51,6 @@ public class User implements UserDetails {
     )
     private Set<Role> roles = new HashSet<>();
 
-    // --- Métodos de UserDetails de Spring Security ---
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
@@ -48,27 +59,17 @@ public class User implements UserDetails {
     }
 
     @Override
-    public String getUsername() {
-        return this.email; // Usamos el correo como identificador
-    }
+    public String getUsername() { return this.email; }
 
     @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+    public boolean isAccountNonExpired() { return true; }
 
     @Override
-    public boolean isAccountNonLocked() {
-        return this.status; // Si el estado es false, la cuenta está bloqueada
-    }
+    public boolean isAccountNonLocked() { return "ACTIVE".equals(this.status); }
 
     @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+    public boolean isCredentialsNonExpired() { return true; }
 
     @Override
-    public boolean isEnabled() {
-        return this.status;
-    }
+    public boolean isEnabled() { return "ACTIVE".equals(this.status); }
 }

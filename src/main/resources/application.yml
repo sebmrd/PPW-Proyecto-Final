@@ -2,37 +2,41 @@ server:
   port: ${PORT:8080}
 
 spring:
+  application:
+    name: proyectofinal
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    # Agregamos los valores por defecto después de los dos puntos (:)
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/academic_events_db}
+    username: ${DB_USERNAME:ups}
+    password: ${DB_PASSWORD:secret}
     hikari:
       maximum-pool-size: 5
   
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: validate # Regla estricta: No crear ni modificar estructura, solo validar
+      ddl-auto: validate
     properties:
       hibernate:
         jdbc:
-          time_zone: UTC # Almacenamiento en UTC
+          time_zone: UTC
 
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
-      password: ${REDIS_PASSWORD}
-
+      # Valores por defecto para Redis también
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      
   flyway:
     enabled: true
     baseline-on-migrate: true
     locations: classpath:db/migration
 
 jwt:
-  secret: ${JWT_SECRET}
-  access-expiration: ${JWT_ACCESS_EXPIRATION}
-  refresh-expiration: ${JWT_REFRESH_EXPIRATION}
+  secret: ${JWT_SECRET:TuClaveSuperSecretaGeneradaEnBase64QueTengaAlMenos256BitsDeLongitudParaEvitarErrores}
+  access-expiration: ${JWT_ACCESS_EXPIRATION:900000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:86400000}
 
 cors:
   allowed-origins: ${ALLOWED_ORIGINS}

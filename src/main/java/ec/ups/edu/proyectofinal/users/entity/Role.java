@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
+
 @Entity
 @Table(name = "roles")
 @Getter @Setter
@@ -14,6 +16,12 @@ public class Role {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 30)
     private RoleEnum name;
+
+    @Column(nullable = false, length = 150)
+    private String description;
+
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt = Instant.now();
 }

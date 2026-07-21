@@ -36,7 +36,8 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
 
-        if (!user.getStatus()) {
+        // CORRECCIÓN AQUÍ: Comparar el String "ACTIVE"
+        if (!"ACTIVE".equals(user.getStatus())) {
             throw new RuntimeException("La cuenta está deshabilitada");
         }
 

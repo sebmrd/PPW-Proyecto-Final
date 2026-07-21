@@ -20,16 +20,16 @@ public class EventService {
     @Transactional
     public void deleteEvent(Long eventId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
 
         boolean hasRegistrations = registrationRepository.existsByEvent(event);
 
-        // Regla: No eliminar físicamente un evento publicado con inscripciones.
+        // Ajuste: La propiedad en la entidad ahora se llama 'deleted' y es Boolean
         if ("PUBLISHED".equals(event.getStatus()) && hasRegistrations) {
-            event.setIsDeleted(true); // Eliminación lógica
+            event.setDeleted(true); 
             eventRepository.save(event);
         } else {
-            eventRepository.delete(event); // Eliminación física si no cumple la condición
+            eventRepository.delete(event);
         }
     }
 }

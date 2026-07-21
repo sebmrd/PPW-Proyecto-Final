@@ -26,39 +26,36 @@ public class RegistrationService {
 
     // Regla: Registrar la inscripción y actualizar la disponibilidad dentro de una transacción.
     @Transactional
-    public Registration registerToEvent(Long eventId, String userEmail) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
+public Registration registerToEvent(Long eventId, String userEmail) {
+    Event event = eventRepository.findById(eventId)
+            .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
 
-        User participant = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    User participant = userRepository.findByEmail(userEmail)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Regla: No permitir inscripciones en eventos finalizados
-        if ("FINISHED".equals(event.getStatus())) {
-            throw new RuntimeException("No se puede inscribir: El evento ya finalizó");
-        }
-
-        // Regla: No permitir inscripciones en eventos sin cupos
-        if (event.getAvailableSpots() <= 0) {
-            throw new RuntimeException("No se puede inscribir: El evento no tiene cupos disponibles");
-        }
-
-        // Regla: No permitir dos inscripciones del mismo participante en un evento
-        if (registrationRepository.existsByParticipantAndEvent(participant, event)) {
-            throw new RuntimeException("El participante ya se encuentra inscrito en este evento");
-        }
-
-        // Actualizamos la disponibilidad
-        event.setAvailableSpots(event.getAvailableSpots() - 1);
-        eventRepository.save(event);
-
-        // Creamos la inscripción
-        Registration registration = new Registration();
-        registration.setEvent(event);
-        registration.setParticipant(participant);
-        registration.setRegistrationDate(Instant.now());
-        registration.setStatus("CONFIRMED");
-
-        return registrationRepository.save(registration);
+    // Ajuste: El estado ahora es String ("FINISHED" en lugar de Enum)
+    if ("FINISHED".equals(event.getStatus())) {
+        throw new RuntimeException("No se puede inscribir: El evento ya finalizó");
     }
+
+    // Ajuste: El nombre del campo cambió a availableCapacity
+    if (event.getAvailableCapacity() <= 0) {
+        throw new RuntimeException("No se puede inscribir: El evento no tiene cupos disponibles");
+    }
+
+    if (registrationRepository.existsByParticipantAndEvent(participant, event)) {
+        throw new RuntimeException("El participante ya se encuentra inscrito en este evento");
+    }
+
+    // Ajuste: Actualizar el nuevo nombre de campo
+    event.setAvailableCapacity(event.getAvailableCapacity() - 1);
+    eventRepository.save(event);
+
+    Registration registration = new Registration();
+    registration.setEvent(event);
+    registration.setParticipant(participant);
+    registration.setStatus("CONFIRMED"); // Mantenemos el String
+
+    return registrationRepository.save(registration);
+}
 }

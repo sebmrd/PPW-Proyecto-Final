@@ -20,11 +20,27 @@ public class Session {
     @JoinColumn(name = "event_id", nullable = false)
     private Event event;
 
-    @Column(nullable = false)
-    private Instant startTime;
+    @Column(nullable = false, length = 160)
+    private String title;
 
-    @Column(nullable = false)
-    private Instant endTime;
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "start_at", nullable = false)
+    private Instant startAt;
+
+    @Column(name = "end_at", nullable = false)
+    private Instant endAt;
     
-    private String location; // Link de zoom o aula física
+    @Column(length = 200)
+    private String location; 
+
+    @Column(name = "virtual_url", length = 500)
+    private String virtualUrl;
+
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt = Instant.now();
+
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt = Instant.now();
 }

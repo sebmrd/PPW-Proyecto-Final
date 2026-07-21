@@ -16,32 +16,54 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 160)
     private String title;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
-    private String modality; // Ej: PRESENCIAL, VIRTUAL, HIBRIDO
+    @Column(nullable = false, length = 20)
+    private String modality; 
+
+    @Column(length = 200)
+    private String location;
+
+    @Column(name = "virtual_url", length = 500)
+    private String virtualUrl;
 
     @Column(nullable = false)
     private Integer capacity;
 
-    @Column(nullable = false)
-    private Integer availableSpots; // Para controlar los cupos rápidamente
+    @Column(name = "available_capacity", nullable = false)
+    private Integer availableCapacity; 
+
+    @Column(name = "registration_start_at", nullable = false)
+    private Instant registrationStartAt;
+
+    @Column(name = "registration_end_at", nullable = false)
+    private Instant registrationEndAt;
+
+    @Column(name = "start_at", nullable = false)
+    private Instant startAt;
+
+    @Column(name = "end_at", nullable = false)
+    private Instant endAt;
+
+    @Column(nullable = false, length = 20)
+    private String status = "DRAFT"; 
 
     @Column(nullable = false)
-    private Instant startDate; // Instant almacena en UTC por defecto
+    private Boolean deleted = false; 
 
+    @Version
     @Column(nullable = false)
-    private Instant endDate;
+    private Long version = 0L;
 
-    @Column(nullable = false)
-    private String status; // Ej: DRAFT, PUBLISHED, FINISHED
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt = Instant.now();
 
-    // Regla de negocio: No eliminar físicamente un evento publicado
-    @Column(nullable = false)
-    private Boolean isDeleted = false; 
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt = Instant.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
