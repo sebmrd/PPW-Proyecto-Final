@@ -6,7 +6,7 @@ spring:
     name: proyectofinal
   datasource:
     # Agregamos los valores por defecto después de los dos puntos (:)
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/academic_events_db}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/academic_events_db}
     username: ${DB_USERNAME:ups}
     password: ${DB_PASSWORD:secret}
     hikari:
@@ -39,4 +39,10 @@ jwt:
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:86400000}
 
 cors:
-  allowed-origins: ${ALLOWED_ORIGINS}
+  allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:8080}
+
+swagger:
+  security:
+    enabled: ${SWAGGER_SECURITY_ENABLED:true}
+    username: ${SWAGGER_USERNAME:evaluator}
+    password: ${SWAGGER_PASSWORD:evaluator123}

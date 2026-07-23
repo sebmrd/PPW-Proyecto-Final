@@ -13,6 +13,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
@@ -45,17 +46,40 @@ public class JwtService {
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
-        return buildToken(new HashMap<>(), userDetails, refreshExpiration);
+        return generateRefreshToken(userDetails, UUID.randomUUID());
+    }
+
+    public String generateRefreshToken(UserDetails userDetails, UUID tokenId) {
+        return buildToken(new HashMap<>(), userDetails, refreshExpiration, tokenId);
     }
 
     private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
-        return Jwts.builder()
+        return buildToken(extraClaims, userDetails, expiration, null);
+    }
+
+    private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration, UUID tokenId) {
+        var builder = Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration));
+
+        if (tokenId != null) {
+            builder.setId(tokenId.toString());
+        }
+
+        return builder
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public UUID extractTokenId(String token) {
+        String tokenId = extractClaim(token, Claims::getId);
+        return UUID.fromString(tokenId);
+    }
+
+    public long getRefreshExpirationMillis() {
+        return refreshExpiration;
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {

@@ -27,7 +27,7 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
 
     // Flyway para migraciones de BD
-    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.springframework.boot:spring-boot-starter-flyway'
     implementation 'org.flywaydb:flyway-database-postgresql'
 
     // Redis y Rate Limiting
@@ -41,7 +41,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
     // OpenAPI (Swagger) & Actuator
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     // Lombok & MapStruct

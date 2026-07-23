@@ -19,7 +19,7 @@ public class ReportController {
     }
 
     @GetMapping("/reports/events/{eventId}/registrations.pdf")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('ORGANIZER') and @resourceAuthorizationService.isEventOrganizer(#eventId, authentication.name))")
     public ResponseEntity<byte[]> getRegistrationsPdf(@PathVariable Long eventId) {
         byte[] pdfBytes = reportService.generateRegistrationsPdf(eventId);
         
@@ -31,7 +31,7 @@ public class ReportController {
     }
 
     @GetMapping("/reports/events/{eventId}/registrations.xlsx")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('ORGANIZER') and @resourceAuthorizationService.isEventOrganizer(#eventId, authentication.name))")
     public ResponseEntity<byte[]> getRegistrationsExcel(@PathVariable Long eventId) {
         byte[] excelBytes = reportService.generateRegistrationsExcel(eventId);
         
@@ -43,7 +43,7 @@ public class ReportController {
     }
 
     @GetMapping("/registrations/{id}/certificate.pdf")
-    @PreAuthorize("hasRole('PARTICIPANT')")
+    @PreAuthorize("hasRole('PARTICIPANT') and @resourceAuthorizationService.isRegistrationParticipant(#id, authentication.name)")
     public ResponseEntity<byte[]> getCertificatePdf(@PathVariable Long id) {
         byte[] pdfBytes = reportService.generateCertificatePdf(id);
         
