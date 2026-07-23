@@ -46,3 +46,12 @@ swagger:
     enabled: ${SWAGGER_SECURITY_ENABLED:true}
     username: ${SWAGGER_USERNAME:evaluator}
     password: ${SWAGGER_PASSWORD:evaluator123}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health"
+  endpoint:
+    health:
+      show-details: "never"

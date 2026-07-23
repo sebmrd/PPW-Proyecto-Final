@@ -14,6 +14,7 @@ import ec.ups.edu.proyectofinal.users.repository.RefreshTokenRepository;
 import ec.ups.edu.proyectofinal.users.repository.RoleRepository;
 import ec.ups.edu.proyectofinal.users.repository.UserRepository;
 import io.jsonwebtoken.JwtException;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
@@ -40,6 +42,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
+    private final StringRedisTemplate redisTemplate;
 
     public AuthService(
             UserRepository userRepository,
@@ -47,7 +50,8 @@ public class AuthService {
             RefreshTokenRepository refreshTokenRepository,
             JwtService jwtService,
             AuthenticationManager authenticationManager,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            StringRedisTemplate redisTemplate
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -55,12 +59,12 @@ public class AuthService {
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
+        this.redisTemplate = redisTemplate;
     }
 
     @Transactional
     public AuthResponse register(RegisterRequest request, String ipAddress) {
         String email = normalizeEmail(request.getEmail());
-
         if (userRepository.existsByEmail(email)) {
             throw new RuntimeException("El correo ya se encuentra registrado");
         }
@@ -82,19 +86,45 @@ public class AuthService {
     @Transactional
     public AuthResponse login(LoginRequest request, String ipAddress) {
         String email = normalizeEmail(request.getEmail());
+        String blockKey = "blocked-user:" + email;
+        String attemptKey = "login-attempts:" + email;
+
+        // 1. Verificar si el usuario está bloqueado temporalmente
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(blockKey))) {
+            throw new RuntimeException("Cuenta bloqueada temporalmente por múltiples intentos fallidos. Intente más tarde.");
+        }
 
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, request.getPassword())
             );
         } catch (AuthenticationException e) {
+            // 2. Manejar el incremento de intentos fallidos
+            Long attempts = redisTemplate.opsForValue().increment(attemptKey);
+            
+            if (attempts != null && attempts == 1) {
+                // Si es el primer fallo, le damos un tiempo de vida al contador (ej. 15 minutos)
+                redisTemplate.expire(attemptKey, Duration.ofMinutes(15));
+            }
+            
+            if (attempts != null && attempts >= 3) {
+                // Al tercer fallo consecutivo, bloqueamos y limpiamos el contador
+                redisTemplate.opsForValue().set(blockKey, "BLOCKED", Duration.ofMinutes(15));
+                redisTemplate.delete(attemptKey);
+                throw new RuntimeException("Cuenta bloqueada temporalmente por múltiples intentos fallidos. Intente más tarde.");
+            }
+            
             throw new BadCredentialsException("Credenciales invalidas");
         }
+
+        // 3. Login exitoso: Limpiamos los intentos fallidos anteriores
+        redisTemplate.delete(attemptKey);
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadCredentialsException("Credenciales invalidas"));
 
         ensureActive(user);
+
         return issueTokens(user, null, ipAddress);
     }
 
@@ -159,6 +189,7 @@ public class AuthService {
         }
 
         refreshTokenRepository.save(storedToken);
+
         return new AuthResponse(accessToken, refreshToken);
     }
 
@@ -170,6 +201,7 @@ public class AuthService {
 
             User user = userRepository.findByEmail(normalizeEmail(email))
                     .orElseThrow(() -> new BadCredentialsException("Refresh token invalido"));
+
             ensureActive(user);
 
             RefreshToken storedToken = refreshTokenRepository.findByTokenHash(tokenHash)
