@@ -10,11 +10,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long> {
     Page<Event> findByStatusAndDeletedFalse(String status, Pageable pageable);
+
+    long countByDeletedFalseAndCreatedAtBetween(Instant from, Instant to);
+
+    long countByStatusAndDeletedFalseAndCreatedAtBetween(String status, Instant from, Instant to);
 
     boolean existsByIdAndOrganizer_Email(Long id, String email);
 

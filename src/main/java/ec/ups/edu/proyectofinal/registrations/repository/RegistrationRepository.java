@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Repository
@@ -17,6 +18,14 @@ public interface RegistrationRepository extends JpaRepository<Registration, Long
     boolean existsByEvent(Event event);
 
     boolean existsByIdAndParticipant_Email(Long id, String email);
+
+    long countByRegisteredAtBetween(Instant from, Instant to);
+
+    long countByStatusAndRegisteredAtBetween(String status, Instant from, Instant to);
+
+    long countByEvent_IdAndRegisteredAtBetween(Long eventId, Instant from, Instant to);
+
+    long countByEvent_IdAndStatusAndRegisteredAtBetween(Long eventId, String status, Instant from, Instant to);
 
     Optional<Registration> findByIdAndParticipant_Email(Long id, String email);
 

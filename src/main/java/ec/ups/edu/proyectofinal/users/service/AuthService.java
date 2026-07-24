@@ -1,5 +1,6 @@
 package ec.ups.edu.proyectofinal.users.service;
 
+import ec.ups.edu.proyectofinal.exception.RateLimitExceededException;
 import ec.ups.edu.proyectofinal.security.JwtService;
 import ec.ups.edu.proyectofinal.users.dto.AuthResponse;
 import ec.ups.edu.proyectofinal.users.dto.LoginRequest;
@@ -14,6 +15,7 @@ import ec.ups.edu.proyectofinal.users.repository.RefreshTokenRepository;
 import ec.ups.edu.proyectofinal.users.repository.RoleRepository;
 import ec.ups.edu.proyectofinal.users.repository.UserRepository;
 import io.jsonwebtoken.JwtException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -35,6 +37,9 @@ import java.util.UUID;
 
 @Service
 public class AuthService {
+
+    private static final int MAX_FAILED_LOGIN_ATTEMPTS = 3;
+    private static final Duration FAILED_LOGIN_WINDOW = Duration.ofMinutes(15);
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -89,9 +94,8 @@ public class AuthService {
         String blockKey = "blocked-user:" + email;
         String attemptKey = "login-attempts:" + email;
 
-        // 1. Verificar si el usuario está bloqueado temporalmente
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(blockKey))) {
-            throw new RuntimeException("Cuenta bloqueada temporalmente por múltiples intentos fallidos. Intente más tarde.");
+        if (isTemporarilyBlocked(blockKey)) {
+            throw temporaryLoginBlockException();
         }
 
         try {
@@ -99,26 +103,11 @@ public class AuthService {
                     new UsernamePasswordAuthenticationToken(email, request.getPassword())
             );
         } catch (AuthenticationException e) {
-            // 2. Manejar el incremento de intentos fallidos
-            Long attempts = redisTemplate.opsForValue().increment(attemptKey);
-            
-            if (attempts != null && attempts == 1) {
-                // Si es el primer fallo, le damos un tiempo de vida al contador (ej. 15 minutos)
-                redisTemplate.expire(attemptKey, Duration.ofMinutes(15));
-            }
-            
-            if (attempts != null && attempts >= 3) {
-                // Al tercer fallo consecutivo, bloqueamos y limpiamos el contador
-                redisTemplate.opsForValue().set(blockKey, "BLOCKED", Duration.ofMinutes(15));
-                redisTemplate.delete(attemptKey);
-                throw new RuntimeException("Cuenta bloqueada temporalmente por múltiples intentos fallidos. Intente más tarde.");
-            }
-            
+            registerFailedLoginAttempt(attemptKey, blockKey);
             throw new BadCredentialsException("Credenciales invalidas");
         }
 
-        // 3. Login exitoso: Limpiamos los intentos fallidos anteriores
-        redisTemplate.delete(attemptKey);
+        clearFailedLoginAttempts(attemptKey);
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadCredentialsException("Credenciales invalidas"));
@@ -227,6 +216,47 @@ public class AuthService {
         if (!"ACTIVE".equals(user.getStatus())) {
             throw new RuntimeException("La cuenta esta deshabilitada");
         }
+    }
+
+    private boolean isTemporarilyBlocked(String blockKey) {
+        try {
+            return Boolean.TRUE.equals(redisTemplate.hasKey(blockKey));
+        } catch (DataAccessException e) {
+            return false;
+        }
+    }
+
+    private void registerFailedLoginAttempt(String attemptKey, String blockKey) {
+        try {
+            Long attempts = redisTemplate.opsForValue().increment(attemptKey);
+
+            if (attempts != null && attempts == 1) {
+                redisTemplate.expire(attemptKey, FAILED_LOGIN_WINDOW);
+            }
+
+            if (attempts != null && attempts >= MAX_FAILED_LOGIN_ATTEMPTS) {
+                redisTemplate.opsForValue().set(blockKey, "BLOCKED", FAILED_LOGIN_WINDOW);
+                redisTemplate.delete(attemptKey);
+                throw temporaryLoginBlockException();
+            }
+        } catch (DataAccessException e) {
+            // Keep login usable if Redis is unavailable in local development.
+        }
+    }
+
+    private void clearFailedLoginAttempts(String attemptKey) {
+        try {
+            redisTemplate.delete(attemptKey);
+        } catch (DataAccessException e) {
+            // Keep login usable if Redis is unavailable in local development.
+        }
+    }
+
+    private RateLimitExceededException temporaryLoginBlockException() {
+        return new RateLimitExceededException(
+                "Cuenta bloqueada temporalmente por multiples intentos fallidos. Intente mas tarde.",
+                FAILED_LOGIN_WINDOW.toSeconds()
+        );
     }
 
     private String normalizeEmail(String email) {

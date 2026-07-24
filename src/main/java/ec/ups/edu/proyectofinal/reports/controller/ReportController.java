@@ -1,5 +1,6 @@
 package ec.ups.edu.proyectofinal.reports.controller;
 
+import ec.ups.edu.proyectofinal.reports.dto.ReportStatisticsResponse;
 import ec.ups.edu.proyectofinal.reports.service.ReportService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -7,6 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.Instant;
 
 @RestController
 @RequestMapping("/api")
@@ -16,6 +19,25 @@ public class ReportController {
 
     public ReportController(ReportService reportService) {
         this.reportService = reportService;
+    }
+
+    @GetMapping("/reports/statistics")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ReportStatisticsResponse getSystemStatistics(
+            @RequestParam(required = false) Instant from,
+            @RequestParam(required = false) Instant to
+    ) {
+        return reportService.generateSystemStatistics(from, to);
+    }
+
+    @GetMapping("/reports/events/{eventId}/statistics")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('ORGANIZER') and @resourceAuthorizationService.isEventOrganizer(#eventId, authentication.name))")
+    public ReportStatisticsResponse getEventStatistics(
+            @PathVariable Long eventId,
+            @RequestParam(required = false) Instant from,
+            @RequestParam(required = false) Instant to
+    ) {
+        return reportService.generateEventStatistics(eventId, from, to);
     }
 
     @GetMapping("/reports/events/{eventId}/registrations.pdf")

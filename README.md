@@ -20,7 +20,7 @@ Esta es una API REST desarrollada con **Spring Boot** y **PostgreSQL** para la g
 
 ## Tecnologías Utilizadas
 
-- **Backend:** Java 17, Spring Boot 3.x
+- **Backend:** Java 17, Spring Boot 4.x
 - **Persistencia:** Spring Data JPA
 - **Seguridad:** Spring Security, JWT, BCrypt
 - **Base de datos:** PostgreSQL 15
@@ -84,6 +84,8 @@ Servicios utilizados:
 - PostgreSQL: puerto **5433**
 - Redis: puerto **6379**
 
+Redis debe estar levantado para probar rate limiting y bloqueo temporal de login.
+
 ### Ejecutar la aplicación
 
 Linux/macOS:
@@ -113,7 +115,7 @@ La base de datos se inicializa automáticamente mediante Flyway con los siguient
 **Contraseña para todos los usuarios:**
 
 ```
-Password123
+Password123*
 ```
 
 ---
@@ -169,6 +171,7 @@ Para desplegar la aplicación:
    - Servicio Redis.
    - Aplicación Spring Boot.
 4. Configurar la variable de entorno `JWT_SECRET` con un valor seguro antes de publicar la aplicación.
+5. Ajustar `ALLOWED_ORIGINS` al dominio público real del servicio o del frontend; no usar `*` en producción.
 
 ---
 
@@ -189,6 +192,6 @@ Para desplegar la aplicación:
 
 ---
 
-## DIagrama Entidad-Relación (ERD)
+## Diagrama Entidad-Relación (ERD)
 
-![Diagrama Entidad-Relación](.\assets\Diagrama.png)
+![Diagrama Entidad-Relación](assets/Diagrama.png)

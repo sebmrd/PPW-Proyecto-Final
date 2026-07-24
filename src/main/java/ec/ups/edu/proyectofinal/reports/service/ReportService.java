@@ -1,9 +1,13 @@
 package ec.ups.edu.proyectofinal.reports.service;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
+import ec.ups.edu.proyectofinal.events.entity.Event;
+import ec.ups.edu.proyectofinal.events.repository.EventRepository;
+import ec.ups.edu.proyectofinal.reports.dto.ReportStatisticsResponse;
 import ec.ups.edu.proyectofinal.registrations.entity.Registration;
 import ec.ups.edu.proyectofinal.registrations.repository.RegistrationRepository;
 import org.apache.poi.ss.usermodel.Row;
@@ -16,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -23,10 +28,50 @@ import java.util.List;
 public class ReportService {
 
     private final RegistrationRepository registrationRepository;
+    private final EventRepository eventRepository;
 
     // Inyectamos el repositorio para obtener los datos reales
-    public ReportService(RegistrationRepository registrationRepository) {
+    public ReportService(RegistrationRepository registrationRepository, EventRepository eventRepository) {
         this.registrationRepository = registrationRepository;
+        this.eventRepository = eventRepository;
+    }
+
+    public ReportStatisticsResponse generateSystemStatistics(Instant from, Instant to) {
+        DateRange range = normalizeRange(from, to);
+
+        return new ReportStatisticsResponse(
+                null,
+                range.from(),
+                range.to(),
+                Instant.now(),
+                eventRepository.countByDeletedFalseAndCreatedAtBetween(range.from(), range.to()),
+                eventRepository.countByStatusAndDeletedFalseAndCreatedAtBetween("PUBLISHED", range.from(), range.to()),
+                registrationRepository.countByRegisteredAtBetween(range.from(), range.to()),
+                registrationRepository.countByStatusAndRegisteredAtBetween("PENDING", range.from(), range.to()),
+                registrationRepository.countByStatusAndRegisteredAtBetween("CONFIRMED", range.from(), range.to()),
+                registrationRepository.countByStatusAndRegisteredAtBetween("CANCELLED", range.from(), range.to()),
+                registrationRepository.countByStatusAndRegisteredAtBetween("REJECTED", range.from(), range.to())
+        );
+    }
+
+    public ReportStatisticsResponse generateEventStatistics(Long eventId, Instant from, Instant to) {
+        Event event = eventRepository.findByIdAndDeletedFalse(eventId)
+                .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
+        DateRange range = normalizeRange(from, to);
+
+        return new ReportStatisticsResponse(
+                event.getId(),
+                range.from(),
+                range.to(),
+                Instant.now(),
+                1,
+                "PUBLISHED".equals(event.getStatus()) ? 1 : 0,
+                registrationRepository.countByEvent_IdAndRegisteredAtBetween(eventId, range.from(), range.to()),
+                registrationRepository.countByEvent_IdAndStatusAndRegisteredAtBetween(eventId, "PENDING", range.from(), range.to()),
+                registrationRepository.countByEvent_IdAndStatusAndRegisteredAtBetween(eventId, "CONFIRMED", range.from(), range.to()),
+                registrationRepository.countByEvent_IdAndStatusAndRegisteredAtBetween(eventId, "CANCELLED", range.from(), range.to()),
+                registrationRepository.countByEvent_IdAndStatusAndRegisteredAtBetween(eventId, "REJECTED", range.from(), range.to())
+        );
     }
 
     // Generar PDF de inscritos
@@ -58,7 +103,7 @@ public class ReportService {
             document.add(table);
             document.close();
             return out.toByteArray();
-        } catch (Exception e) {
+        } catch (DocumentException | IOException e) {
             throw new RuntimeException("Error al generar el PDF", e);
         }
     }
@@ -96,13 +141,17 @@ public class ReportService {
 
     // Generar Comprobante PDF (Participante)
     public byte[] generateCertificatePdf(Long registrationId) {
+        Registration reg = registrationRepository.findById(registrationId)
+                .orElseThrow(() -> new RuntimeException("Inscripción no encontrada"));
+
+        if (!"CONFIRMED".equals(reg.getStatus())) {
+            throw new RuntimeException("Solo se puede generar el comprobante de una inscripcion confirmada");
+        }
+
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Document document = new Document();
             PdfWriter.getInstance(document, out);
             document.open();
-
-            Registration reg = registrationRepository.findById(registrationId)
-                    .orElseThrow(() -> new RuntimeException("Inscripción no encontrada"));
 
             document.add(new Paragraph("Comprobante de Inscripción Oficial"));
             document.add(new Paragraph("----------------------------------"));
@@ -117,8 +166,22 @@ public class ReportService {
 
             document.close();
             return out.toByteArray();
-        } catch (Exception e) {
+        } catch (DocumentException | IOException e) {
             throw new RuntimeException("Error al generar el comprobante", e);
         }
+    }
+
+    private DateRange normalizeRange(Instant from, Instant to) {
+        Instant normalizedTo = to == null ? Instant.now() : to;
+        Instant normalizedFrom = from == null ? Instant.EPOCH : from;
+
+        if (normalizedFrom.isAfter(normalizedTo)) {
+            throw new RuntimeException("El rango de fechas no es valido");
+        }
+
+        return new DateRange(normalizedFrom, normalizedTo);
+    }
+
+    private record DateRange(Instant from, Instant to) {
     }
 }
