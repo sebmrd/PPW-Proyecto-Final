@@ -9,7 +9,7 @@ services:
   - type: redis
     name: redis-academic-cache
     plan: free
-    ipAllowlist: []
+    ipAllowList: []
     
   # 3. Backend Spring Boot
   - type: web
