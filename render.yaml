@@ -1,15 +1,15 @@
-services:
+databases:
   # 1. Base de datos PostgreSQL
-  - type: psql
-    name: postgres-academic-db
+  - name: postgres-academic-db
     plan: free
     postgresMajorVersion: 15
 
+services:
   # 2. Caché Redis
   - type: redis
     name: redis-academic-cache
     plan: free
-
+    
   # 3. Backend Spring Boot
   - type: web
     name: backend-academic-events
@@ -47,3 +47,4 @@ services:
         value: 86400000
       - key: ALLOWED_ORIGINS
         value: "https://backend-academic-events.onrender.com"
+        
