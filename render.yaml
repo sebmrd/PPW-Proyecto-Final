@@ -32,8 +32,10 @@ services:
         fromDatabase:
           name: postgres-academic-db
           property: database
-      - key: DB_USERNAME
-        value: ups
+      - - key: DB_USERNAME
+          fromDatabase:
+            name: postgres-academic-db
+            property: user
       - key: DB_PASSWORD
         fromDatabase:
           name: postgres-academic-db
