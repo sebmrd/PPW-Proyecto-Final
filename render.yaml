@@ -9,6 +9,7 @@ services:
   - type: redis
     name: redis-academic-cache
     plan: free
+    ipAllowlist: []
     
   # 3. Backend Spring Boot
   - type: web
@@ -47,4 +48,3 @@ services:
         value: 86400000
       - key: ALLOWED_ORIGINS
         value: "https://backend-academic-events.onrender.com"
-        
