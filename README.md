@@ -205,3 +205,19 @@ Para desplegar la aplicación:
 
 *(Nota: Swagger está protegido. Credenciales: evaluator / evaluator123)*
 
+---
+
+### Evidencias de Despliegue en Producción
+
+**1. Verificación de estado (Actuator Health):**
+![Health Check](./assets/actuator-health.png)
+
+**2. Interfaz de Swagger cargada:**
+![Swagger cargada 1](./assets/swagger-1.png)
+![Swagger cargada 2](./assets/swagger-2.png)
+
+**3. Interfaz de Swagger UI protegida:**
+![Swagger UI Login](./assets/swagger-login.png)
+
+**4. Consumo exitoso de endpoint protegido (200 OK):**
+![Endpoint OK](./assets/endpoint-exitoso.png)
