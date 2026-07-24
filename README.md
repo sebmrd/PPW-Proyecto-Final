@@ -195,3 +195,13 @@ Para desplegar la aplicación:
 ## Diagrama Entidad-Relación (ERD)
 
 ![Diagrama Entidad-Relación](assets/Diagrama.png)
+
+---
+
+## Enlaces de Producción
+* **URL Base de la API:** `https://backend-academic-events.onrender.com`
+* **Documentación Swagger UI:** `https://backend-academic-events.onrender.com/swagger-ui/index.html`
+* **Health Check (Actuator):** `https://backend-academic-events.onrender.com/actuator/health`
+
+*(Nota: Swagger está protegido. Credenciales: evaluator / evaluator123)*
+
