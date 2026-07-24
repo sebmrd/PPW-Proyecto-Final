@@ -20,10 +20,18 @@ services:
     envVars:
       - key: PORT
         value: 8080
-      - key: DB_URL
+      - key: DB_HOST
         fromDatabase:
           name: postgres-academic-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: postgres-academic-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: postgres-academic-db
+          property: database
       - key: DB_USERNAME
         value: ups
       - key: DB_PASSWORD

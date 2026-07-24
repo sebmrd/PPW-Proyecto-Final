@@ -6,7 +6,7 @@ spring:
     name: proyectofinal
   datasource:
     # Agregamos los valores por defecto después de los dos puntos (:)
-    url: ${DB_URL:jdbc:postgresql://localhost:5433/academic_events_db}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:academic_events_db}
     username: ${DB_USERNAME:ups}
     password: ${DB_PASSWORD:secret}
     hikari:
