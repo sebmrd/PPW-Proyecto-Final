@@ -4,7 +4,7 @@ WORKDIR /app
 COPY . .
 # Damos permisos al wrapper y construimos descartando los tests para agilizar
 RUN chmod +x gradlew
-RUN ./gradlew build -x test
+RUN ./gradlew build -x test --no-daemon
 
 # Etapa de ejecución
 FROM eclipse-temurin:17-jre-alpine
