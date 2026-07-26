@@ -10,7 +10,7 @@ services:
     name: redis-academic-cache
     plan: free
     ipAllowList: []
-    
+
   # 3. Backend Spring Boot
   - type: web
     name: backend-academic-events
@@ -32,10 +32,10 @@ services:
         fromDatabase:
           name: postgres-academic-db
           property: database
-      - - key: DB_USERNAME
-          fromDatabase:
-            name: postgres-academic-db
-            property: user
+      - key: DB_USERNAME
+        fromDatabase:
+          name: postgres-academic-db
+          property: user
       - key: DB_PASSWORD
         fromDatabase:
           name: postgres-academic-db
@@ -51,7 +51,7 @@ services:
           name: redis-academic-cache
           property: port
       - key: JWT_SECRET
-        value: "ReemplazaEstoPorTuClaveSecretaLargaEnElDashboardDeRender"
+        generateValue: true
       - key: JWT_ACCESS_EXPIRATION
         value: 900000
       - key: JWT_REFRESH_EXPIRATION
