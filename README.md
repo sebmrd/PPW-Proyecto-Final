@@ -321,51 +321,131 @@ Las evidencias con tokens, credenciales o secretos fueron redactadas antes de in
 
 ### Arquitectura y base de datos
 
+**Evidencia 1. Arquitectura modular**
+
+La captura muestra la separacion del proyecto por paquetes y responsabilidades. Se observa que el backend no esta concentrado en una sola clase, sino dividido en dominios, controladores, servicios, repositorios, DTO, seguridad, configuracion y manejo de excepciones. Esto respalda el cumplimiento de la arquitectura por capas solicitada.
+
 ![Arquitectura de paquetes](assets/evidencia-01-arquitectura-paquetes.png)
+
+**Evidencia 2. Persistencia en PostgreSQL**
+
+La captura confirma que las tablas principales fueron creadas en PostgreSQL. Se evidencian las entidades necesarias para usuarios, roles, eventos, sesiones, inscripciones, tokens de refresco y auditoria, junto con la estructura generada mediante migraciones.
 
 ![Tablas en PostgreSQL](assets/evidencia-02-tablas-postgresql.png)
 
 ### Seguridad, autenticacion y autorizacion
 
+**Evidencia 3. Control de acceso por roles y propiedad**
+
+La respuesta `403 Forbidden` demuestra que la API bloquea acciones no autorizadas. Esta prueba valida que no basta con estar autenticado: el sistema tambien revisa el rol del usuario y la propiedad del recurso antes de permitir una operacion.
+
 ![Acceso 403 por permisos](assets/evidencia-03-roles-403.png)
+
+**Evidencia 4. Documentacion de endpoints**
+
+Swagger UI lista los controladores y operaciones disponibles de la API. Esta evidencia permite verificar que los modulos principales estan expuestos de forma documentada y que los endpoints pueden probarse desde una interfaz unica.
 
 ![Swagger Endpoints](assets/evidencia-04-swagger-endpoints.png)
 
+**Evidencia 5. Proteccion de Swagger con Basic Auth**
+
+La ventana de autenticacion Basic muestra que la documentacion no queda publica sin control. El acceso a Swagger requiere credenciales independientes del JWT usado por la API.
+
 ![Swagger Basic Auth](assets/evidencia-11-swagger-basic-auth.png)
 
+**Evidencia 6. Login con JWT**
+
+La captura de login exitoso demuestra que el sistema autentica credenciales validas y devuelve tokens para consumir endpoints protegidos. Los valores sensibles fueron ocultados para evitar exponer tokens reales en el repositorio.
+
 ![Login en Swagger](assets/swagger-login.png)
+
+**Evidencia 7. Refresh token o cierre de sesion**
+
+La prueba del flujo de refresh o logout evidencia que la autenticacion no se limita al login inicial. El backend permite renovar tokens de forma controlada y revocar sesiones cuando el usuario cierra sesion.
 
 ![Refresh o Logout](assets/evidencia-05-refresh-logout.png)
 
 ### Redis, limites y errores controlados
 
+**Evidencia 8. Claves temporales en Redis**
+
+La captura de Redis muestra llaves temporales creadas por la aplicacion, como contadores de login o limites de solicitudes. Esto confirma que Redis se usa como almacenamiento temporal con expiracion, no como base de datos principal.
+
 ![Claves Redis](assets/evidencia-06-redis-keys.png)
+
+**Evidencia 9. Rate limiting activo**
+
+La respuesta `429 Too Many Requests` confirma que la API limita solicitudes repetidas. Esta proteccion reduce abuso en endpoints sensibles como login, registro y reportes.
 
 ![Rate Limit 429](assets/evidencia-07-rate-limit-429.png)
 
+**Evidencia 10. Reglas de negocio**
+
+La captura muestra una respuesta controlada ante una accion invalida, como intentar duplicar un registro o incumplir una regla del dominio. Esto evidencia que las validaciones no dependen solo de la base de datos, sino tambien de la capa de servicio.
+
 ![Regla de negocio](assets/evidencia-09-regla-negocio-duplicado.png)
+
+**Evidencia 11. Manejo uniforme de errores**
+
+La respuesta JSON demuestra que los errores se devuelven con una estructura consistente. El formato incluye datos como estado HTTP, mensaje, codigo interno, fecha y ruta, lo que facilita depuracion y consumo desde clientes externos.
 
 ![Error uniforme](assets/evidencia-10-error-validacion.png)
 
 ### Reportes, estadisticas y pruebas
 
+**Evidencia 12. Reporte PDF de inscritos**
+
+La descarga del PDF confirma que el modulo de reportes genera archivos bajo demanda. El acceso se controla por rol y propiedad del evento, por lo que solo administradores u organizadores autorizados pueden obtener esta informacion.
+
 ![Reporte PDF](assets/evidencia-13-reporte-pdf.png)
+
+**Evidencia 13. Reporte Excel de inscritos**
+
+La descarga del archivo Excel demuestra que la misma informacion puede exportarse en un formato procesable. Esto cumple el requerimiento de reportes descargables y facilita analisis fuera de la API.
 
 ![Reporte Excel](assets/evidencia-13-reporte-excel.png)
 
+**Evidencia 14. Certificado de inscripcion confirmada**
+
+El certificado PDF evidencia que el sistema valida el estado de la inscripcion antes de generar documentos para participantes. La generacion esta restringida a inscripciones confirmadas y usuarios autorizados.
+
 ![Certificado confirmado](assets/evidencia-13-certificado-confirmado.png)
+
+**Evidencia 15. Estadisticas**
+
+La respuesta de estadisticas muestra informacion agregada por rango de fechas o por evento. Esto demuestra que el backend no solo administra datos operativos, sino que tambien entrega resultados resumidos para consulta y seguimiento.
 
 ![Estadisticas](assets/evidencia-13-estadisticas.png)
 
+**Evidencia 16. Pruebas automatizadas**
+
+La ejecucion de Gradle con resultado exitoso confirma que el proyecto compila y que las pruebas automatizadas pasan. Esta evidencia respalda la estabilidad minima del backend despues de integrar seguridad, reportes, Redis y configuracion.
+
 ![Pruebas Gradle](assets/evidencia-14-gradle-build-success.png)
+
+**Evidencia 17. Fechas en formato ISO 8601**
+
+La respuesta JSON muestra fechas serializadas en formato ISO 8601. Esto mantiene compatibilidad con clientes externos y evita ambiguedades de zona horaria al consumir la API.
 
 ![Fechas ISO 8601](assets/evidencia-17-fechas-iso8601.png)
 
 ### Produccion
 
+**Evidencia 18. Health check en produccion**
+
+El endpoint de Actuator responde con estado `UP`, lo que confirma que la aplicacion desplegada esta disponible. Este endpoint se expone sin detalles internos para comprobar salud sin revelar informacion sensible.
+
 ![Actuator Health](assets/actuator-health.png)
 
+**Evidencia 19. Swagger en produccion**
+
+La captura muestra Swagger cargado desde la URL publica del backend. Esto permite comprobar que la documentacion tambien esta disponible en el despliegue y conserva las protecciones configuradas.
+
 ![Swagger produccion](assets/swagger-2.png)
+
+**Evidencia 20. Consumo de endpoint protegido en produccion**
+
+La respuesta exitosa de un endpoint protegido demuestra que el despliegue no solo inicia correctamente, sino que permite autenticar y consumir recursos reales de la API usando JWT.
 
 ![Endpoint protegido exitoso](assets/endpoint-exitoso.png)
 
