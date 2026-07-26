@@ -55,8 +55,7 @@ El backend se organizo como un monolito modular por dominios. La estructura sepa
 
 El mapeo entre entidades y respuestas se realiza mediante DTO de entrada/salida y metodos de conversion como `from(...)`, evitando exponer directamente las entidades JPA en la API.
 
-Evidencia sugerida: `assets/evidencia-01-arquitectura-paquetes.png`
-Debe mostrar la estructura de paquetes del proyecto en el IDE.
+Evidencia documentada: `assets/evidencia-01-arquitectura-paquetes.png`.
 
 ### Punto 2. Modelo de datos
 
@@ -64,8 +63,7 @@ La base de datos contiene las tablas principales solicitadas: `users`, `roles`, 
 
 Tambien se agrego el script `00_create_database.sql` para crear la base `academic_events_db`, y la migracion principal crea tablas, relaciones, restricciones, indices y datos iniciales.
 
-Evidencia sugerida: `assets/evidencia-02-tablas-postgresql.png`
-Debe mostrar el resultado de `\dt` o una vista de las tablas creadas en PostgreSQL.
+Evidencia documentada: `assets/evidencia-02-tablas-postgresql.png`.
 
 ### Punto 3. Roles y permisos
 
@@ -79,8 +77,7 @@ El sistema maneja tres roles:
 
 Ademas del rol, se valida la propiedad del recurso con `ResourceAuthorizationService`. Por ejemplo, un organizador no puede modificar eventos de otro organizador y un participante no puede descargar certificados ajenos.
 
-Evidencia sugerida: `assets/evidencia-03-roles-403.png`
-Debe mostrar una solicitud rechazada con `403 Forbidden` al intentar acceder a un recurso ajeno.
+Evidencia documentada: `assets/evidencia-03-roles-403.png`.
 
 ### Punto 4. Flujo funcional y endpoints minimos
 
@@ -94,8 +91,7 @@ Se implementaron los flujos principales de la API:
 - Inscripciones: inscribirse, listar propias, cancelar, listar inscritos por evento y actualizar estado.
 - Reportes: PDF, Excel, certificado y estadisticas.
 
-Evidencia sugerida: `assets/evidencia-04-swagger-endpoints.png`
-Debe mostrar Swagger UI con los grupos de endpoints cargados.
+Evidencia documentada: `assets/evidencia-04-swagger-endpoints.png`.
 
 ### Punto 5. Autenticacion y autorizacion
 
@@ -103,11 +99,9 @@ La autenticacion usa JWT. El `accessToken` tiene expiracion corta y el `refreshT
 
 Las contrasenas se almacenan con BCrypt. Los endpoints protegidos usan Spring Security y reglas `@PreAuthorize`. Los mensajes de autenticacion son genericos para no revelar si un correo existe.
 
-Evidencia incluida: `assets/swagger-login.png`
-Muestra un login exitoso en Swagger con tokens redactados.
+Evidencia documentada: `assets/swagger-login.png`.
 
-Evidencia sugerida: `assets/evidencia-05-refresh-logout.png`
-Debe mostrar una prueba de `/api/auth/refresh` o `/api/auth/logout`.
+Evidencia documentada adicional: `assets/evidencia-05-refresh-logout.png`.
 
 ### Punto 6. Redis y rate limiting
 
@@ -120,8 +114,7 @@ Redis se usa solo como almacenamiento temporal, no como fuente principal de dato
 
 Si Redis no esta disponible en desarrollo local, la API evita caerse completamente y permite continuar pruebas basicas.
 
-Evidencia sugerida: `assets/evidencia-06-redis-keys.png`
-Debe mostrar claves temporales en Redis o logs de funcionamiento del rate limiting.
+Evidencia documentada: `assets/evidencia-06-redis-keys.png`.
 
 ### Punto 7. Limites de solicitudes
 
@@ -137,8 +130,7 @@ Limites configurados:
 | Endpoints autenticados | Usuario | 120 por minuto |
 | Reportes | Usuario | 5 por minuto |
 
-Evidencia sugerida: `assets/evidencia-07-rate-limit-429.png`
-Debe mostrar una respuesta `429` con header `Retry-After`.
+Evidencia documentada: `assets/evidencia-07-rate-limit-429.png`.
 
 ### Punto 8. CORS restringido
 
@@ -146,8 +138,7 @@ CORS se configura desde la variable `ALLOWED_ORIGINS`. Se restringen metodos a `
 
 En produccion no se usa `*`; en `render.yaml` se define un dominio especifico.
 
-Evidencia sugerida: `assets/evidencia-08-cors-render-env.png`
-Debe mostrar la variable `ALLOWED_ORIGINS` configurada en Render.
+La configuracion queda documentada en `render.yaml`, donde `ALLOWED_ORIGINS` se define con un dominio concreto para produccion.
 
 ### Punto 9. Reglas de negocio y transacciones
 
@@ -163,8 +154,7 @@ Se implementaron reglas de negocio como:
 - No eliminar fisicamente eventos publicados con inscripciones; se aplica eliminado logico.
 - Listados con paginacion, filtros y busqueda.
 
-Evidencia sugerida: `assets/evidencia-09-regla-negocio-duplicado.png`
-Debe mostrar un error controlado por categoria/correo/inscripcion duplicada.
+Evidencia documentada: `assets/evidencia-09-regla-negocio-duplicado.png`.
 
 ### Punto 10. Manejo centralizado de excepciones
 
@@ -178,8 +168,7 @@ Se implemento `GlobalExceptionHandler` con respuestas uniformes que incluyen:
 
 Se manejan errores de validacion, autenticacion, acceso prohibido, reglas de negocio y exceso de solicitudes.
 
-Evidencia sugerida: `assets/evidencia-10-error-validacion.png`
-Debe mostrar una respuesta JSON de error uniforme, por ejemplo enviando un DTO invalido.
+Evidencia documentada: `assets/evidencia-10-error-validacion.png`.
 
 ### Punto 11. Swagger y OpenAPI protegidos
 
@@ -190,21 +179,18 @@ Swagger UI esta disponible y protegido con autenticacion Basic. Las credenciales
 
 Dentro de Swagger se configura el esquema Bearer JWT para probar endpoints protegidos.
 
-Evidencias incluidas:
+Evidencias documentadas:
 
-- `assets/swagger-1.png`
+- `assets/evidencia-04-swagger-endpoints.png`
 - `assets/swagger-2.png`
 - `assets/swagger-login.png`
-
-Evidencia sugerida adicional: `assets/evidencia-11-swagger-basic-auth.png`
-Debe mostrar la ventana de autenticacion Basic antes de entrar a Swagger.
+- `assets/evidencia-11-swagger-basic-auth.png`
 
 ### Punto 12. Actuator y observabilidad
 
 Se agrego Spring Boot Actuator y se expone publicamente solo `/actuator/health`, sin detalles internos del sistema. Esto permite comprobar que la API esta disponible localmente o en produccion.
 
-Evidencia incluida: `assets/actuator-health.png`
-Muestra el endpoint de salud en Render con estado `UP`.
+Evidencia documentada: `assets/actuator-health.png`.
 
 ### Punto 13. Reportes, estadisticas y archivos descargables
 
@@ -222,7 +208,7 @@ Endpoints implementados:
 
 Los archivos responden con `Content-Type` y `Content-Disposition` para descarga.
 
-Evidencias sugeridas:
+Evidencias documentadas:
 
 - `assets/evidencia-13-reporte-pdf.png`: descarga de inscritos en PDF.
 - `assets/evidencia-13-reporte-excel.png`: descarga de inscritos en Excel.
@@ -239,8 +225,7 @@ Tambien se ejecutaron pruebas con Gradle:
 .\gradlew.bat clean test --console=plain
 ```
 
-Evidencia sugerida: `assets/evidencia-14-gradle-build-success.png`
-Debe mostrar `BUILD SUCCESSFUL`.
+Evidencia documentada: `assets/evidencia-14-gradle-build-success.png`.
 
 ### Punto 15. Despliegue
 
@@ -261,9 +246,6 @@ Evidencias incluidas:
 
 - `assets/actuator-health.png`
 - `assets/endpoint-exitoso.png`
-
-Evidencia sugerida adicional: `assets/evidencia-15-render-dashboard.png`
-Debe mostrar el dashboard de Render con el servicio web, PostgreSQL y Redis activos.
 
 ### Punto 16. Variables de entorno
 
@@ -287,10 +269,7 @@ Variables principales:
 - `SWAGGER_USERNAME`
 - `SWAGGER_PASSWORD`
 
-En Render, `JWT_SECRET` se genera con `generateValue: true`.
-
-Evidencia sugerida: `assets/evidencia-16-env-render.png`
-Debe mostrar variables configuradas en Render, ocultando valores sensibles.
+En Render, `JWT_SECRET` se genera con `generateValue: true`. La configuracion sensible queda fuera del repositorio y se documenta mediante `.env.example` y `render.yaml`.
 
 ### Punto 17. Zona horaria
 
@@ -304,62 +283,95 @@ hibernate:
 
 Los valores de fecha se intercambian en formato ISO 8601. La zona de negocio indicada es `America/Guayaquil`, por lo que las conversiones para visualizacion o reportes se pueden realizar desde el cliente o capa de presentacion cuando sea necesario.
 
-Evidencia sugerida: `assets/evidencia-17-fechas-iso8601.png`
-Debe mostrar una respuesta JSON con fechas en formato ISO 8601.
+Evidencia documentada: `assets/evidencia-17-fechas-iso8601.png`.
 
 ---
 
-## 4. Evidencias Incluidas Actualmente
+## 4. Evidencias Incorporadas
 
-| Archivo | Evidencia |
-|---------|-----------|
-| `assets/Diagrama.png` | Diagrama entidad-relacion del proyecto. |
-| `assets/actuator-health.png` | Health check de Actuator en Render. |
-| `assets/swagger-1.png` | Swagger UI cargado en produccion. |
-| `assets/swagger-2.png` | Vista adicional de Swagger UI. |
-| `assets/swagger-login.png` | Login exitoso en Swagger con tokens redactados. |
-| `assets/endpoint-exitoso.png` | Consumo exitoso de endpoint protegido con token redactado. |
+| Punto | Comprobacion | Archivo |
+|-------|--------------|---------|
+| 1 | Arquitectura modular por paquetes. | `assets/evidencia-01-arquitectura-paquetes.png` |
+| 2 | Tablas creadas en PostgreSQL mediante migraciones. | `assets/evidencia-02-tablas-postgresql.png` |
+| 3 | Rechazo `403 Forbidden` por permisos o propiedad de recurso. | `assets/evidencia-03-roles-403.png` |
+| 4 | Swagger UI con endpoints principales disponibles. | `assets/evidencia-04-swagger-endpoints.png` |
+| 5 | Login exitoso con JWT en Swagger, con tokens redactados. | `assets/swagger-login.png` |
+| 5 | Flujo de refresh token o logout. | `assets/evidencia-05-refresh-logout.png` |
+| 6 | Claves temporales creadas en Redis. | `assets/evidencia-06-redis-keys.png` |
+| 7 | Rate limit activo con respuesta `429 Too Many Requests`. | `assets/evidencia-07-rate-limit-429.png` |
+| 8 y 16 | Configuracion versionada de CORS, variables y secretos por entorno. | `.env.example`, `render.yaml` |
+| 9 | Regla de negocio aplicada ante datos duplicados o inscripcion invalida. | `assets/evidencia-09-regla-negocio-duplicado.png` |
+| 10 | Respuesta JSON uniforme del manejador global de excepciones. | `assets/evidencia-10-error-validacion.png` |
+| 11 | Swagger protegido con autenticacion Basic. | `assets/evidencia-11-swagger-basic-auth.png` |
+| 11 | Swagger UI disponible para probar endpoints protegidos. | `assets/evidencia-04-swagger-endpoints.png`, `assets/swagger-2.png` |
+| 12 | Actuator Health publico con estado `UP`. | `assets/actuator-health.png` |
+| 13 | Reporte PDF de inscritos. | `assets/evidencia-13-reporte-pdf.png` |
+| 13 | Reporte Excel de inscritos. | `assets/evidencia-13-reporte-excel.png` |
+| 13 | Certificado PDF para inscripcion confirmada. | `assets/evidencia-13-certificado-confirmado.png` |
+| 13 | Estadisticas consultadas por rango de fechas. | `assets/evidencia-13-estadisticas.png` |
+| 14 | Ejecucion de pruebas con Gradle y resultado exitoso. | `assets/evidencia-14-gradle-build-success.png` |
+| 15 | Consumo de la API desplegada en produccion. | `assets/endpoint-exitoso.png` |
+| 17 | Respuesta JSON con fechas en formato ISO 8601. | `assets/evidencia-17-fechas-iso8601.png` |
 
----
-
-## 5. Evidencias Pendientes Recomendadas
-
-Para que el informe se vea como proyecto final completo, se recomienda agregar las siguientes capturas en `assets/`:
-
-| Nombre sugerido | Que debe mostrar |
-|-----------------|------------------|
-| `evidencia-01-arquitectura-paquetes.png` | Estructura modular del proyecto en el IDE. |
-| `evidencia-02-tablas-postgresql.png` | Tablas creadas en PostgreSQL. |
-| `evidencia-03-roles-403.png` | Error `403` por acceso a recurso ajeno. |
-| `evidencia-05-refresh-logout.png` | Prueba de refresh token o logout. |
-| `evidencia-06-redis-keys.png` | Claves temporales en Redis. |
-| `evidencia-07-rate-limit-429.png` | Respuesta `429` con `Retry-After`. |
-| `evidencia-08-cors-render-env.png` | Variable `ALLOWED_ORIGINS` en Render. |
-| `evidencia-09-regla-negocio-duplicado.png` | Error por duplicado o regla de negocio. |
-| `evidencia-10-error-validacion.png` | Error uniforme por DTO invalido. |
-| `evidencia-11-swagger-basic-auth.png` | Acceso Basic Auth de Swagger. |
-| `evidencia-13-reporte-pdf.png` | Descarga de reporte PDF. |
-| `evidencia-13-reporte-excel.png` | Descarga de reporte Excel. |
-| `evidencia-13-certificado-confirmado.png` | Certificado de inscripcion confirmada. |
-| `evidencia-13-estadisticas.png` | Estadisticas con rango de fechas. |
-| `evidencia-14-gradle-build-success.png` | Gradle mostrando `BUILD SUCCESSFUL`. |
-| `evidencia-15-render-dashboard.png` | Servicios activos en Render. |
-| `evidencia-16-env-render.png` | Variables de entorno en Render con secretos ocultos. |
-| `evidencia-17-fechas-iso8601.png` | Fechas en formato ISO 8601. |
-| `evidencia-git-commits-mateo.png` | Commits funcionales de Mateo. |
-| `evidencia-git-commits-sebastian.png` | Commits funcionales de Sebastian. |
-
-No se deben subir capturas con tokens JWT, contrasenas reales ni secretos visibles.
+Las evidencias con tokens, credenciales o secretos fueron redactadas antes de incorporarse al repositorio.
 
 ---
 
-## 6. Diagrama Entidad-Relacion
+## 5. Galeria de Evidencias
 
-![Diagrama Entidad-Relacion](assets/Diagrama.png)
+### Arquitectura y base de datos
+
+![Arquitectura de paquetes](assets/evidencia-01-arquitectura-paquetes.png)
+
+![Tablas en PostgreSQL](assets/evidencia-02-tablas-postgresql.png)
+
+### Seguridad, autenticacion y autorizacion
+
+![Acceso 403 por permisos](assets/evidencia-03-roles-403.png)
+
+![Swagger Endpoints](assets/evidencia-04-swagger-endpoints.png)
+
+![Swagger Basic Auth](assets/evidencia-11-swagger-basic-auth.png)
+
+![Login en Swagger](assets/swagger-login.png)
+
+![Refresh o Logout](assets/evidencia-05-refresh-logout.png)
+
+### Redis, limites y errores controlados
+
+![Claves Redis](assets/evidencia-06-redis-keys.png)
+
+![Rate Limit 429](assets/evidencia-07-rate-limit-429.png)
+
+![Regla de negocio](assets/evidencia-09-regla-negocio-duplicado.png)
+
+![Error uniforme](assets/evidencia-10-error-validacion.png)
+
+### Reportes, estadisticas y pruebas
+
+![Reporte PDF](assets/evidencia-13-reporte-pdf.png)
+
+![Reporte Excel](assets/evidencia-13-reporte-excel.png)
+
+![Certificado confirmado](assets/evidencia-13-certificado-confirmado.png)
+
+![Estadisticas](assets/evidencia-13-estadisticas.png)
+
+![Pruebas Gradle](assets/evidencia-14-gradle-build-success.png)
+
+![Fechas ISO 8601](assets/evidencia-17-fechas-iso8601.png)
+
+### Produccion
+
+![Actuator Health](assets/actuator-health.png)
+
+![Swagger produccion](assets/swagger-2.png)
+
+![Endpoint protegido exitoso](assets/endpoint-exitoso.png)
 
 ---
 
-## 7. Enlaces de Produccion
+## 6. Enlaces de Produccion
 
 | Recurso | URL |
 |---------|-----|
@@ -374,7 +386,7 @@ Swagger esta protegido con:
 
 ---
 
-## 8. Usuarios de Prueba
+## 7. Usuarios de Prueba
 
 La base de datos se inicializa automaticamente mediante Flyway con usuarios de prueba.
 
@@ -392,7 +404,7 @@ Password123*
 
 ---
 
-## 9. Ejecucion Local
+## 8. Ejecucion Local
 
 ### Requisitos
 
@@ -433,7 +445,7 @@ Servicios locales:
 
 ---
 
-## 10. Despliegue en Render
+## 9. Despliegue en Render
 
 El despliegue se realiza con Blueprint usando `render.yaml`.
 
@@ -449,30 +461,13 @@ Pasos generales:
 
 ---
 
-## 11. Evidencias de Despliegue en Produccion
+## 10. Seguridad de Evidencias
 
-### Actuator Health
-
-![Health Check](assets/actuator-health.png)
-
-### Swagger UI
-
-![Swagger cargado 1](assets/swagger-1.png)
-
-![Swagger cargado 2](assets/swagger-2.png)
-
-### Login en Swagger
-
-![Swagger Login](assets/swagger-login.png)
-
-### Endpoint protegido exitoso
-
-![Endpoint OK](assets/endpoint-exitoso.png)
+Las capturas publicadas evitan exponer tokens JWT, contrasenas reales, secretos de entorno o credenciales privadas. Cuando se muestran respuestas autenticadas, los valores sensibles se encuentran ocultos o recortados para conservar la evidencia funcional sin comprometer la seguridad del proyecto.
 
 ---
 
-
-## 12. Conclusiones
+## 11. Conclusiones
 
 El proyecto integra los principales contenidos de la asignatura en una API REST completa: arquitectura modular, seguridad JWT, autorizacion por roles, persistencia relacional, Redis, rate limiting, validaciones, reportes descargables, observabilidad y despliegue en produccion.
 
